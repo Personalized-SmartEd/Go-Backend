@@ -32,7 +32,8 @@ type SignedDetailsTeacher struct {
 
 var SECRET_KEY string = os.Getenv("SECRET_KEY")
 
-var userCollection *mongo.Collection = config.OpenCollection(config.Client, "user")
+var studentCollection *mongo.Collection = config.OpenCollection(config.Client, "student")
+var teacherCollection *mongo.Collection = config.OpenCollection(config.Client, "teacher")
 
 func GenerateAllTokens(email string, name string, studentID string, class string) (signedToken string, signedRefreshToken string, err error) {
 	claims := &SignedDetailsStudent{
@@ -66,7 +67,7 @@ func GenerateAllTokens(email string, name string, studentID string, class string
 	return token, refreshToken, err
 }
 
-func UpdateAllTokens(signedToken string, signedRefreshToken string, studentId string) {
+func UpdateAllStudentTokens(signedToken string, signedRefreshToken string, studentId string) {
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 
 	var updateObj primitive.D
@@ -83,7 +84,7 @@ func UpdateAllTokens(signedToken string, signedRefreshToken string, studentId st
 		Upsert: &upsert,
 	}
 
-	_, err := userCollection.UpdateOne(
+	_, err := studentCollection.UpdateOne(
 		ctx,
 		filter,
 		bson.D{
@@ -98,6 +99,36 @@ func UpdateAllTokens(signedToken string, signedRefreshToken string, studentId st
 		return
 	}
 
+}
+
+func UpdateAllTeacherTokens(signedToken string, signedRefreshToken string, teacherId string) {
+	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+	defer cancel()
+
+	var updateObj primitive.D
+	updateObj = append(updateObj, bson.E{Key: "token", Value: signedToken})
+	updateObj = append(updateObj, bson.E{Key: "refresh_token", Value: signedRefreshToken})
+	updatedAt := time.Now()
+	updateObj = append(updateObj, bson.E{Key: "updated_at", Value: updatedAt})
+
+	upsert := true
+	filter := bson.M{"teacher_id": teacherId}
+	opt := options.UpdateOptions{
+		Upsert: &upsert,
+	}
+
+	_, err := teacherCollection.UpdateOne(
+		ctx,
+		filter,
+		bson.D{
+			{Key: "$set", Value: updateObj},
+		},
+		&opt,
+	)
+	if err != nil {
+		log.Panic(err)
+		return
+	}
 }
 
 func ValidateStudentToken(signedToken string) (claims *SignedDetailsStudent, msg string) {

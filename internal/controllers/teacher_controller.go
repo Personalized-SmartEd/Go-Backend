@@ -120,7 +120,7 @@ func LoginTeacher() gin.HandlerFunc {
 
 		token, refreshToken, _ := helper.GenerateAllTokens(foundteacher.TeacherID, foundteacher.Name, foundteacher.Email, foundteacher.SchoolCode)
 
-		helper.UpdateAllTokens(token, refreshToken, foundteacher.TeacherID)
+		helper.UpdateAllTeacherTokens(token, refreshToken, foundteacher.TeacherID)
 
 		c.JSON(http.StatusOK, foundteacher)
 	}

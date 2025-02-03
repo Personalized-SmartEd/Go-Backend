@@ -37,6 +37,7 @@ type StudentSignUp struct {
 var studentCollection *mongo.Collection = config.OpenCollection(config.Client, "student")
 var validate = validator.New()
 
+// GetStudents returns all student records.
 func GetStudents() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -44,13 +45,13 @@ func GetStudents() gin.HandlerFunc {
 
 		result, err := studentCollection.Find(ctx, bson.M{})
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occured while listing student items"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while listing student items"})
 			return
 		}
 
 		var allstudents []bson.M
 		if err = result.All(ctx, &allstudents); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error occured while decoding food items"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while decoding student items"})
 			return
 		}
 
@@ -63,34 +64,30 @@ func GetStudent() gin.HandlerFunc {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 
-		student_id := c.Param("student_id")
-
+		studentID := c.Param("student_id")
 		var student models.Student
 
-		err := studentCollection.FindOne(ctx, bson.M{"student_id": student_id}).Decode(&student)
-
+		err := studentCollection.FindOne(ctx, bson.M{"student_id": studentID}).Decode(&student)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occured while listing student items"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while retrieving student item"})
 			return
 		}
 		c.JSON(http.StatusOK, student)
 	}
 }
 
-func SignUp() gin.HandlerFunc {
+func AddStudent() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 
 		var student StudentSignUp
-
 		if err := c.BindJSON(&student); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
 		var inputStudent models.Student
-
 		inputStudent.Name = student.Name
 		inputStudent.Age = student.Age
 		inputStudent.Password = student.Password
@@ -107,11 +104,6 @@ func SignUp() gin.HandlerFunc {
 		inputStudent.ID = primitive.NewObjectID()
 		inputStudent.StudentID = inputStudent.ID.Hex()
 
-		token, refreshToken, _ := helper.GenerateAllTokens(student.Email, student.Name, inputStudent.StudentID, student.Class)
-
-		inputStudent.Token = token
-		inputStudent.RefreshToken = &refreshToken
-
 		inputStudent.Performance = 0.0
 		inputStudent.PerformanceLvl = "Beginner"
 		inputStudent.PastPerformance = []float64{0.0}
@@ -127,15 +119,14 @@ func SignUp() gin.HandlerFunc {
 
 		if err != nil {
 			log.Panic(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occured while checking for the email"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while checking for the email"})
 			return
 		}
 
-		password := HashPassword(student.Password)
-		student.Password = password
+		inputStudent.Password = HashPassword(student.Password)
 
 		if count > 0 {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "this email already exsits"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "this email already exists"})
 			return
 		}
 
@@ -178,9 +169,82 @@ func Login() gin.HandlerFunc {
 
 		token, refreshToken, _ := helper.GenerateAllTokens(foundstudent.StudentID, foundstudent.Name, foundstudent.Email, foundstudent.Class)
 
-		helper.UpdateAllTokens(token, refreshToken, foundstudent.StudentID)
+		foundstudent.Token = token
+		foundstudent.RefreshToken = &refreshToken
+
+		helper.UpdateAllStudentTokens(token, refreshToken, foundstudent.StudentID)
 
 		c.JSON(http.StatusOK, foundstudent)
+	}
+}
+
+func UpdateStudent() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+
+		studentID := c.Param("student_id")
+
+		var studentUpdate StudentSignUp
+		if err := c.BindJSON(&studentUpdate); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		update := bson.M{
+			"name":        studentUpdate.Name,
+			"age":         studentUpdate.Age,
+			"password":    HashPassword(studentUpdate.Password),
+			"email":       studentUpdate.Email,
+			"image":       studentUpdate.Image,
+			"school_name": studentUpdate.SchoolName,
+			"school_code": studentUpdate.SchoolCode,
+			"subjects":    studentUpdate.Subjects,
+			"class":       studentUpdate.Class,
+			"updated_at": func() time.Time {
+				t, _ := time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+				return t
+			}(),
+		}
+
+		result, err := studentCollection.UpdateOne(
+			ctx,
+			bson.M{"student_id": studentID},
+			bson.M{"$set": update},
+		)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while updating the student item"})
+			return
+		}
+
+		if result.MatchedCount == 0 {
+			c.JSON(http.StatusNotFound, gin.H{"error": "student not found"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "student updated successfully", "result": result})
+	}
+}
+
+func DeleteStudent() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+
+		studentID := c.Param("student_id")
+
+		result, err := studentCollection.DeleteOne(ctx, bson.M{"student_id": studentID})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while deleting the student"})
+			return
+		}
+
+		if result.DeletedCount == 0 {
+			c.JSON(http.StatusNotFound, gin.H{"error": "student not found"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "student deleted successfully"})
 	}
 }
 
