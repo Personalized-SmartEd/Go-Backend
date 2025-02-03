@@ -17,6 +17,23 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type StudentLogin struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=8"`
+}
+
+type StudentSignUp struct {
+	Name       string   `json:"name" validate:"required"`
+	Age        int      `json:"age" validate:"required,gte=5"`
+	Password   string   `json:"password" validate:"required,min=8"`
+	Email      string   `json:"email" validate:"required,email"`
+	Image      string   `json:"image"`
+	SchoolName string   `json:"school_name" validate:"required"`
+	SchoolCode string   `json:"school_code" validate:"required"`
+	Subjects   []string `json:"subjects" validate:"required"`
+	Class      string   `json:"class" validate:"required"`
+}
+
 var studentCollection *mongo.Collection = config.OpenCollection(config.Client, "student")
 var validate = validator.New()
 
@@ -65,21 +82,48 @@ func SignUp() gin.HandlerFunc {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 
-		var student models.Student
+		var student StudentSignUp
 
 		if err := c.BindJSON(&student); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		validationErr := validate.Struct(student)
+		var inputStudent models.Student
 
+		inputStudent.Name = student.Name
+		inputStudent.Age = student.Age
+		inputStudent.Password = student.Password
+		inputStudent.Email = student.Email
+		inputStudent.Image = student.Image
+		inputStudent.SchoolName = student.SchoolName
+		inputStudent.SchoolCode = student.SchoolCode
+		inputStudent.Subjects = student.Subjects
+		inputStudent.Class = student.Class
+
+		inputStudent.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+		inputStudent.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+
+		inputStudent.ID = primitive.NewObjectID()
+		inputStudent.StudentID = inputStudent.ID.Hex()
+
+		token, refreshToken, _ := helper.GenerateAllTokens(student.Email, student.Name, inputStudent.StudentID, student.Class)
+
+		inputStudent.Token = token
+		inputStudent.RefreshToken = &refreshToken
+
+		inputStudent.Performance = 0.0
+		inputStudent.PerformanceLvl = "Beginner"
+		inputStudent.PastPerformance = []float64{0.0}
+		inputStudent.LearningStyle = []string{}
+
+		validationErr := validate.Struct(inputStudent)
 		if validationErr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
 			return
 		}
 
-		count, err := studentCollection.CountDocuments(ctx, bson.M{"email": student.Email})
+		count, err := studentCollection.CountDocuments(ctx, bson.M{"email": inputStudent.Email})
 
 		if err != nil {
 			log.Panic(err)
@@ -95,17 +139,7 @@ func SignUp() gin.HandlerFunc {
 			return
 		}
 
-		student.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
-		student.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
-
-		student.ID = primitive.NewObjectID()
-		student.StudentID = student.ID.Hex()
-
-		token, refreshToken, _ := helper.GenerateAllTokens(student.StudentID, student.Name, student.Email, student.Class)
-		student.Token = token
-		student.RefreshToken = &refreshToken
-
-		resultInsertionNumber, insertErr := studentCollection.InsertOne(ctx, student)
+		resultInsertionNumber, insertErr := studentCollection.InsertOne(ctx, inputStudent)
 
 		if insertErr != nil {
 			msg := "student item was not created"
@@ -122,7 +156,7 @@ func Login() gin.HandlerFunc {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 
-		var student models.Student
+		var student StudentLogin
 		var foundstudent models.Student
 
 		if err := c.BindJSON(&student); err != nil {
