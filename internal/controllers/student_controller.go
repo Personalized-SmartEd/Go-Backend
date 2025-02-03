@@ -28,8 +28,8 @@ type StudentSignUp struct {
 	Password   string   `json:"password" validate:"required,min=8"`
 	Email      string   `json:"email" validate:"required,email"`
 	Image      string   `json:"image"`
-	SchoolName string   `json:"school_name" validate:"required"`
-	SchoolCode string   `json:"school_code" validate:"required"`
+	SchoolName string   `bson:"school_name" validate:"required"`
+	SchoolCode string   `bson:"school_code" validate:"required"`
 	Subjects   []string `json:"subjects" validate:"required"`
 	Class      string   `json:"class" validate:"required"`
 }
@@ -37,7 +37,6 @@ type StudentSignUp struct {
 var studentCollection *mongo.Collection = config.OpenCollection(config.Client, "student")
 var validate = validator.New()
 
-// GetStudents returns all student records.
 func GetStudents() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -123,7 +122,7 @@ func AddStudent() gin.HandlerFunc {
 			return
 		}
 
-		inputStudent.Password = HashPassword(student.Password)
+		inputStudent.Password = HashPassword(inputStudent.Password)
 
 		if count > 0 {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "this email already exists"})
