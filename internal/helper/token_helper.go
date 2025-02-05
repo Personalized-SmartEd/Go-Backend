@@ -35,7 +35,7 @@ var SECRET_KEY string = os.Getenv("SECRET_KEY")
 var studentCollection *mongo.Collection = config.OpenCollection(config.Client, "student")
 var teacherCollection *mongo.Collection = config.OpenCollection(config.Client, "teacher")
 
-func GenerateAllTokens(email string, name string, studentID string, class string) (signedToken string, signedRefreshToken string, err error) {
+func GenerateAllTokens(studentID string, name string, email string, class string) (signedToken string, signedRefreshToken string, err error) {
 	claims := &SignedDetailsStudent{
 		StudentID: studentID,
 		Name:      name,
