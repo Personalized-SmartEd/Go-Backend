@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"backend/internal/models"
+	"backend/internal/utils"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -12,19 +13,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 )
-
-type StaticAssessmentRequest struct {
-	Responses []int `json:"responses"`
-}
-
-type DynamicAssessmentRequest struct {
-	Subject string `json:"subject"`
-	Scores  []int  `json:"scores"`
-}
-
-type LearningStyle struct {
-	Style string `json:"style"`
-}
 
 func GetStaticAssessment() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -59,7 +47,7 @@ func PostStaticAssessment() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		var requestBody StaticAssessmentRequest
+		var requestBody utils.StaticAssessmentRequest
 		if err := c.BindJSON(&requestBody); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -92,25 +80,34 @@ func PostStaticAssessment() gin.HandlerFunc {
 			return
 		}
 
-		var currentStudent models.Student
+		studentIDIfc, exists := c.Get("student_id")
+		if !exists {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Student ID not found in context"})
+			return
+		}
+		studentID, ok := studentIDIfc.(string)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid student ID format"})
+			return
+		}
 
-		student_id := c.Keys["email"]
-		colerr := studentCollection.FindOne(ctx, bson.M{"student_id": student_id}).Decode(&currentStudent)
+		var currentStudent models.Student
+		colerr := studentCollection.FindOne(ctx, bson.M{"student_id": studentID}).Decode(&currentStudent)
 		if colerr != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find student"})
 			return
 		}
 
-		var styleData LearningStyle
+		var styleData utils.LearningStyle
 		err = json.Unmarshal([]byte(body), &styleData)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse response"})
 			return
 		}
 
-		currentStudent.LearningStyle = append(currentStudent.LearningStyle, styleData.Style)
+		currentStudent.LearningStyle = styleData.Style
 
-		_, err = studentCollection.UpdateOne(ctx, bson.M{"student_id": student_id}, bson.M{"$set": bson.M{"learning_style": currentStudent.LearningStyle}})
+		_, err = studentCollection.UpdateOne(ctx, bson.M{"student_id": studentID}, bson.M{"$set": bson.M{"learning_style": currentStudent.LearningStyle}})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update student"})
 			return
@@ -125,7 +122,7 @@ func PostDynamicAssessment() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		var requestBody DynamicAssessmentRequest
+		var requestBody utils.DynamicAssessmentRequest
 		if err := c.BindJSON(&requestBody); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return

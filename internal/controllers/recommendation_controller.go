@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"backend/internal/utils"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -11,21 +12,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type RecommentdationInput struct {
-	LearningStyle      string   `json:"learning_style"`
-	CurrentLevel       string   `json:"current_level"`
-	WeakAreas          []string `json:"weak_areas"`
-	PerformanceHistory []int    `json:"performance_history"`
-	PreferredPace      string   `json:"preferred_pace"`
-	AvailableHours     int      `json:"available_hours"`
-}
-
 func PostRecommendation() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		var requestBody RecommentdationInput
+		var requestBody utils.RecommentdationInput
 		if err := c.BindJSON(&requestBody); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
