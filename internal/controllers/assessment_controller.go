@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"backend/internal/config"
 	"backend/internal/models"
 	"backend/internal/utils"
 	"bytes"
@@ -19,7 +20,7 @@ func GetStaticAssessment() gin.HandlerFunc {
 		_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		resp, err := http.Get("https://ml-service-m5is.onrender.com/assessment/static")
+		resp, err := http.Get(config.BaseURL + "/assessment/static")
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch assessment"})
 			return
@@ -47,7 +48,7 @@ func PostStaticAssessment() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		var requestBody utils.StaticAssessmentRequest
+		var requestBody utils.StaticAssessmentInput
 		if err := c.BindJSON(&requestBody); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -59,7 +60,7 @@ func PostStaticAssessment() gin.HandlerFunc {
 			return
 		}
 
-		req, err := http.NewRequestWithContext(ctx, "POST", "https://ml-service-m5is.onrender.com/assessment/static", bytes.NewBuffer(requestJSON))
+		req, err := http.NewRequestWithContext(ctx, "POST", config.BaseURL+"/assessment/static", bytes.NewBuffer(requestJSON))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create request"})
 			return
@@ -122,7 +123,7 @@ func PostDynamicAssessment() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		var requestBody utils.DynamicAssessmentRequest
+		var requestBody utils.DynamicAssessmentInput
 		if err := c.BindJSON(&requestBody); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -134,7 +135,7 @@ func PostDynamicAssessment() gin.HandlerFunc {
 			return
 		}
 
-		req, err := http.NewRequestWithContext(ctx, "POST", "https://ml-service-m5is.onrender.com/assessment/dynamic", bytes.NewBuffer(requestJSON))
+		req, err := http.NewRequestWithContext(ctx, "POST", config.BaseURL+"/assessment/dynamic", bytes.NewBuffer(requestJSON))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create request"})
 			return
