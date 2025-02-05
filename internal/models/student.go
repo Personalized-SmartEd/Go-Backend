@@ -18,11 +18,12 @@ type Student struct {
 	SchoolCode      string             `bson:"school_code" validate:"required"`
 	Subjects        []string           `bson:"subjects" validate:"required"`
 	Pace            string             `bson:"pace"`
-	Class           string             `bson:"class" validate:"required"`
+	ClassNumber     int                `bson:"class_number"`
+	ClassCode       string             `bson:"class_code"`
 	Performance     float64            `bson:"performance"`
 	PerformanceLvl  string             `bson:"performance_lvl"`
 	PastPerformance []float64          `bson:"past_performance"`
-	LearningStyle   string             `bson:"learning_style" validate:"required"`
+	LearningStyle   string             `bson:"learning_style"`
 	Token           string             `bson:"token"`
 	RefreshToken    *string            `bson:"refresh_token"`
 	Created_at      time.Time          `json:"created_at"`
