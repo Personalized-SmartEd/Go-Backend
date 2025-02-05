@@ -1,5 +1,7 @@
 package utils
 
+import "github.com/golang-jwt/jwt"
+
 type TutorBotInput struct {
 	Subject struct {
 		Subject          string `json:"subject"`
@@ -17,14 +19,9 @@ type TutorBotInput struct {
 	NewMessage string `json:"new_message"`
 }
 
-type ChatRecord struct {
+type ChatRecordInput struct {
 	Content string `json:"content"`
 	Sender  string `json:"sender"`
-}
-
-type ReturnResponse struct {
-	Explanation        string       `json:"explanation"`
-	UpdatedChatHistory []ChatRecord `json:"updated_chat_history"`
 }
 
 type RecommentdationInput struct {
@@ -65,11 +62,11 @@ type DoubtBotInput struct {
 	Subject string `json:"subject"`
 }
 
-type StaticAssessmentRequest struct {
+type StaticAssessmentInput struct {
 	Responses []int `json:"responses"`
 }
 
-type DynamicAssessmentRequest struct {
+type DynamicAssessmentInput struct {
 	Subject string `json:"subject"`
 	Scores  []int  `json:"scores"`
 }
@@ -98,4 +95,28 @@ type StudentSignUp struct {
 	SchoolCode  string   `bson:"school_code" validate:"required"`
 	Subjects    []string `json:"subjects" validate:"required"`
 	ClassNumber int      `json:"class_number" validate:"required,oneof=6 7 8"`
+}
+
+type InputClassroom struct {
+	TeacherID   string   `bson:"teacher_id" validate:"required"`
+	SchoolCode  string   `bson:"school_code" validate:"required"`
+	Students    []string `bson:"students"`
+	ClassNumber string   `bson:"class_number" validate:"required"`
+	ClassCode   string   `bson:"class_code" validate:"required"`
+}
+
+type SignedDetailsStudent struct {
+	StudentID string
+	Name      string
+	Email     string
+	Class     string
+	jwt.StandardClaims
+}
+
+type SignedDetailsTeacher struct {
+	TeacherID  string
+	Name       string
+	Email      string
+	SchoolCode string
+	jwt.StandardClaims
 }
