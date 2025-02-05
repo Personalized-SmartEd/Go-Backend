@@ -92,7 +92,7 @@ func PostTutorBot() gin.HandlerFunc {
 		}
 
 		payload["student"] = map[string]interface{}{
-			"student_class":                     currentStudent.Class,
+			"student_class":                     currentStudent.ClassNumber,
 			"student_performance_from_1_to_100": currentStudent.Performance,
 			"student_learning_style":            currentStudent.LearningStyle,
 			"student_performance_level":         currentStudent.PerformanceLvl,

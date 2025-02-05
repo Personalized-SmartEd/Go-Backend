@@ -79,7 +79,7 @@ func SignUp() gin.HandlerFunc {
 		inputStudent.SchoolName = student.SchoolName
 		inputStudent.SchoolCode = student.SchoolCode
 		inputStudent.Subjects = student.Subjects
-		inputStudent.Class = student.Class
+		inputStudent.ClassNumber = student.ClassNumber
 
 		inputStudent.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 		inputStudent.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
@@ -92,6 +92,7 @@ func SignUp() gin.HandlerFunc {
 		inputStudent.PastPerformance = []float64{0.0}
 		inputStudent.LearningStyle = ""
 		inputStudent.Pace = "slow"
+		inputStudent.ClassCode = ""
 
 		validationErr := validate.Struct(inputStudent)
 		if validationErr != nil {
@@ -151,7 +152,7 @@ func Login() gin.HandlerFunc {
 			return
 		}
 
-		token, refreshToken, _ := helper.GenerateAllTokens(foundstudent.StudentID, foundstudent.Name, foundstudent.Email, foundstudent.Class)
+		token, refreshToken, _ := helper.GenerateAllTokens(foundstudent.StudentID, foundstudent.Name, foundstudent.Email, foundstudent.ClassCode)
 
 		foundstudent.Token = token
 		foundstudent.RefreshToken = &refreshToken
@@ -184,7 +185,7 @@ func UpdateStudent() gin.HandlerFunc {
 			"school_name": studentUpdate.SchoolName,
 			"school_code": studentUpdate.SchoolCode,
 			"subjects":    studentUpdate.Subjects,
-			"class":       studentUpdate.Class,
+			"class":       studentUpdate.ClassNumber,
 			"updated_at": func() time.Time {
 				t, _ := time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 				return t

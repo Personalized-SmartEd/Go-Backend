@@ -4,6 +4,7 @@ import (
 	"backend/internal/config"
 	"backend/internal/helper"
 	"backend/internal/models"
+	"backend/internal/utils"
 	"context"
 	"log"
 	"net/http"
@@ -98,7 +99,7 @@ func LoginTeacher() gin.HandlerFunc {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 
-		var teacher models.Teacher
+		var teacher utils.TeacherLogin
 		var foundteacher models.Teacher
 
 		if err := c.BindJSON(&teacher); err != nil {
