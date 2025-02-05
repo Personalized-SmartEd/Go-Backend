@@ -4,6 +4,7 @@ import (
 	"backend/internal/config"
 	"backend/internal/helper"
 	"backend/internal/models"
+	"backend/internal/utils"
 	"context"
 	"log"
 	"net/http"
@@ -16,23 +17,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
-
-type StudentLogin struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=8"`
-}
-
-type StudentSignUp struct {
-	Name       string   `json:"name" validate:"required"`
-	Age        int      `json:"age" validate:"required,gte=5"`
-	Password   string   `json:"password" validate:"required,min=8"`
-	Email      string   `json:"email" validate:"required,email"`
-	Image      string   `json:"image"`
-	SchoolName string   `bson:"school_name" validate:"required"`
-	SchoolCode string   `bson:"school_code" validate:"required"`
-	Subjects   []string `json:"subjects" validate:"required"`
-	Class      string   `json:"class" validate:"required"`
-}
 
 var studentCollection *mongo.Collection = config.OpenCollection(config.Client, "student")
 var validate = validator.New()
@@ -80,7 +64,7 @@ func AddStudent() gin.HandlerFunc {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 
-		var student StudentSignUp
+		var student utils.StudentSignUp
 		if err := c.BindJSON(&student); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -104,9 +88,10 @@ func AddStudent() gin.HandlerFunc {
 		inputStudent.StudentID = inputStudent.ID.Hex()
 
 		inputStudent.Performance = 0.0
-		inputStudent.PerformanceLvl = "Beginner"
+		inputStudent.PerformanceLvl = "beginner"
 		inputStudent.PastPerformance = []float64{0.0}
-		inputStudent.LearningStyle = []string{}
+		inputStudent.LearningStyle = ""
+		inputStudent.Pace = "slow"
 
 		validationErr := validate.Struct(inputStudent)
 		if validationErr != nil {
@@ -146,7 +131,7 @@ func Login() gin.HandlerFunc {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 
-		var student StudentLogin
+		var student utils.StudentLogin
 		var foundstudent models.Student
 
 		if err := c.BindJSON(&student); err != nil {
@@ -184,7 +169,7 @@ func UpdateStudent() gin.HandlerFunc {
 
 		studentID := c.Param("student_id")
 
-		var studentUpdate StudentSignUp
+		var studentUpdate utils.StudentSignUp
 		if err := c.BindJSON(&studentUpdate); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
