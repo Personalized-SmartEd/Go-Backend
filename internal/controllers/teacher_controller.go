@@ -133,7 +133,7 @@ func LogOutTeacher() gin.HandlerFunc {
 
 		teacher_id := c.Param("teacher_id")
 
-		_, err := teacherCollection.UpdateOne(ctx, bson.M{"teacher_id": teacher_id}, bson.M{"$set": bson.M{"tokens": ""}})
+		_, err := teacherCollection.UpdateOne(ctx, bson.M{"teacher_id": teacher_id}, bson.M{"$set": bson.M{"token": ""}})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occured while logging out"})
 			return
