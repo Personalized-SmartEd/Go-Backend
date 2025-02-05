@@ -23,7 +23,7 @@ func GetTutorClasses() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		req, err := http.NewRequestWithContext(ctx, "GET", "https://ml-service-m5is.onrender.com/tutor/classes", nil)
+		req, err := http.NewRequestWithContext(ctx, "GET", config.BaseURL+"/tutor/classes", nil)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create request"})
 			return
@@ -101,8 +101,8 @@ func PostTutorBot() gin.HandlerFunc {
 
 		if requestBody.ChatId == "" {
 
-			var chatHistoryList []utils.ChatRecord
-			chatHistoryList = append(chatHistoryList, utils.ChatRecord{Content: "", Sender: "student"})
+			var chatHistoryList []utils.ChatRecordInput
+			chatHistoryList = append(chatHistoryList, utils.ChatRecordInput{Content: "", Sender: "student"})
 			payload["chat_history"] = chatHistoryList
 
 		} else {
@@ -113,19 +113,19 @@ func PostTutorBot() gin.HandlerFunc {
 				return
 			}
 
-			var chatHistoryList []utils.ChatRecord
+			var chatHistoryList []utils.ChatRecordInput
 			for chatHistory.Next(ctx) {
-				var chatRecord utils.ChatRecord
-				err := chatHistory.Decode(&chatRecord)
+				var ChatRecordInput utils.ChatRecordInput
+				err := chatHistory.Decode(&ChatRecordInput)
 				if err != nil {
 					c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode chat history"})
 					return
 				}
-				chatHistoryList = append(chatHistoryList, chatRecord)
+				chatHistoryList = append(chatHistoryList, ChatRecordInput)
 			}
 
 			if len(chatHistoryList) == 0 {
-				chatHistoryList = append(chatHistoryList, utils.ChatRecord{Content: "", Sender: "student"})
+				chatHistoryList = append(chatHistoryList, utils.ChatRecordInput{Content: "", Sender: "student"})
 			}
 
 			payload["chat_history"] = chatHistoryList
@@ -138,7 +138,7 @@ func PostTutorBot() gin.HandlerFunc {
 			return
 		}
 
-		req, err := http.NewRequestWithContext(ctx, "POST", "https://ml-service-m5is.onrender.com/tutor/session", bytes.NewBuffer(requestJSON))
+		req, err := http.NewRequestWithContext(ctx, "POST", config.BaseURL+"/tutor/session", bytes.NewBuffer(requestJSON))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create outbound request"})
 			return

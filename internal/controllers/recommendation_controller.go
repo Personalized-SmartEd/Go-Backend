@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"backend/internal/config"
 	"backend/internal/utils"
 	"bytes"
 	"context"
@@ -29,7 +30,7 @@ func PostRecommendation() gin.HandlerFunc {
 			return
 		}
 
-		req, err := http.NewRequestWithContext(ctx, "POST", "https://ml-service-m5is.onrender.com/reccomend/generate_study_plan", bytes.NewBuffer(requestJSON))
+		req, err := http.NewRequestWithContext(ctx, "POST", config.BaseURL+"/reccomend/generate_study_plan", bytes.NewBuffer(requestJSON))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create request"})
 			return

@@ -2,6 +2,7 @@ package helper
 
 import (
 	"backend/internal/config"
+	"backend/internal/utils"
 	"context"
 	"log"
 	"os"
@@ -14,29 +15,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type SignedDetailsStudent struct {
-	StudentID string
-	Name      string
-	Email     string
-	Class     string
-	jwt.StandardClaims
-}
-
-type SignedDetailsTeacher struct {
-	TeacherID  string
-	Name       string
-	Email      string
-	SchoolCode string
-	jwt.StandardClaims
-}
-
 var SECRET_KEY string = os.Getenv("SECRET_KEY")
 
 var studentCollection *mongo.Collection = config.OpenCollection(config.Client, "student")
 var teacherCollection *mongo.Collection = config.OpenCollection(config.Client, "teacher")
 
 func GenerateAllTokens(studentID string, name string, email string, class string) (signedToken string, signedRefreshToken string, err error) {
-	claims := &SignedDetailsStudent{
+	claims := &utils.SignedDetailsStudent{
 		StudentID: studentID,
 		Name:      name,
 		Email:     email,
@@ -46,7 +31,7 @@ func GenerateAllTokens(studentID string, name string, email string, class string
 		},
 	}
 
-	refreshClaims := &SignedDetailsStudent{
+	refreshClaims := &utils.SignedDetailsStudent{
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(168)).Unix(),
 		},
@@ -68,7 +53,7 @@ func GenerateAllTokens(studentID string, name string, email string, class string
 }
 
 func UpdateAllStudentTokens(signedToken string, signedRefreshToken string, studentId string) {
-	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 
 	var updateObj primitive.D
 
@@ -102,7 +87,7 @@ func UpdateAllStudentTokens(signedToken string, signedRefreshToken string, stude
 }
 
 func UpdateAllTeacherTokens(signedToken string, signedRefreshToken string, teacherId string) {
-	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 
 	var updateObj primitive.D
@@ -131,17 +116,17 @@ func UpdateAllTeacherTokens(signedToken string, signedRefreshToken string, teach
 	}
 }
 
-func ValidateStudentToken(signedToken string) (claims *SignedDetailsStudent, msg string) {
+func ValidateStudentToken(signedToken string) (claims *utils.SignedDetailsStudent, msg string) {
 
 	token, err := jwt.ParseWithClaims(
 		signedToken,
-		&SignedDetailsStudent{},
+		&utils.SignedDetailsStudent{},
 		func(token *jwt.Token) (interface{}, error) {
 			return []byte(SECRET_KEY), nil
 		},
 	)
 
-	claims, ok := token.Claims.(*SignedDetailsStudent)
+	claims, ok := token.Claims.(*utils.SignedDetailsStudent)
 	if !ok {
 		msg = "the token is invalid"
 		msg = err.Error()
@@ -158,17 +143,17 @@ func ValidateStudentToken(signedToken string) (claims *SignedDetailsStudent, msg
 
 }
 
-func ValidateTeacherToken(signedToken string) (claims *SignedDetailsTeacher, msg string) {
+func ValidateTeacherToken(signedToken string) (claims *utils.SignedDetailsTeacher, msg string) {
 
 	token, err := jwt.ParseWithClaims(
 		signedToken,
-		&SignedDetailsTeacher{},
+		&utils.SignedDetailsTeacher{},
 		func(token *jwt.Token) (interface{}, error) {
 			return []byte(SECRET_KEY), nil
 		},
 	)
 
-	claims, ok := token.Claims.(*SignedDetailsTeacher)
+	claims, ok := token.Claims.(*utils.SignedDetailsTeacher)
 	if !ok {
 		msg = "the token is invalid"
 		msg = err.Error()

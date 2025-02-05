@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"backend/internal/config"
 	"backend/internal/models"
 	"backend/internal/utils"
 	"bytes"
@@ -72,7 +73,7 @@ func PostQuizBot() gin.HandlerFunc {
 			return
 		}
 
-		req, err := http.NewRequestWithContext(ctx, "POST", "https://ml-service-m5is.onrender.com/quiz", bytes.NewBuffer(requestJSON))
+		req, err := http.NewRequestWithContext(ctx, "POST", config.BaseURL+"/quiz", bytes.NewBuffer(requestJSON))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create request"})
 			return
