@@ -23,7 +23,7 @@ type Student struct {
 	PerformanceLvl  string             `bson:"performance_lvl"`
 	PastPerformance []float64          `bson:"past_performance"`
 	LearningStyle   []string           `bson:"learning_style" validate:"required"`
-	Token           string             `bson:"tokens"`
+	Token           string             `bson:"token"`
 	RefreshToken    *string            `bson:"refresh_token"`
 	Created_at      time.Time          `json:"created_at"`
 	Updated_at      time.Time          `json:"updated_at"`

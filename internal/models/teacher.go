@@ -16,7 +16,7 @@ type Teacher struct {
 	Image        string             `bson:"image"`
 	SchoolName   string             `bson:"school_name" validate:"required"`
 	SchoolCode   string             `bson:"school_code" validate:"required"`
-	Token        string             `bson:"tokens"`
+	Token        string             `bson:"token"`
 	RefreshToken *string            `bson:"refresh_token"`
 	Created_at   time.Time          `json:"created_at"`
 	Updated_at   time.Time          `json:"updated_at"`
