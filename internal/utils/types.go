@@ -83,14 +83,19 @@ type StudentLogin struct {
 	Password string `json:"password" validate:"required,min=8"`
 }
 
+type TeacherLogin struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=8"`
+}
+
 type StudentSignUp struct {
-	Name       string   `json:"name" validate:"required"`
-	Age        int      `json:"age" validate:"required,gte=5"`
-	Password   string   `json:"password" validate:"required,min=8"`
-	Email      string   `json:"email" validate:"required,email"`
-	Image      string   `json:"image"`
-	SchoolName string   `bson:"school_name" validate:"required"`
-	SchoolCode string   `bson:"school_code" validate:"required"`
-	Subjects   []string `json:"subjects" validate:"required"`
-	Class      string   `json:"class" validate:"required"`
+	Name        string   `json:"name" validate:"required"`
+	Age         int      `json:"age" validate:"required,gte=5"`
+	Password    string   `json:"password" validate:"required,min=8"`
+	Email       string   `json:"email" validate:"required,email"`
+	Image       string   `json:"image"`
+	SchoolName  string   `bson:"school_name" validate:"required"`
+	SchoolCode  string   `bson:"school_code" validate:"required"`
+	Subjects    []string `json:"subjects" validate:"required"`
+	ClassNumber int      `json:"class_number" validate:"required,oneof=6 7 8"`
 }
