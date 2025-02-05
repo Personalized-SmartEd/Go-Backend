@@ -23,6 +23,8 @@ func main() {
 	routes.TutorRoutes(r)
 	routes.DoubtRoutes(r)
 	routes.RecommendationRoutes(r)
+	routes.ClassroomRoutesStudent(r)
+	routes.ClassroomRoutesTeacher(r)
 
 	port := "8080"
 
