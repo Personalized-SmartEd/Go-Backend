@@ -93,8 +93,8 @@ type StudentSignUp struct {
 	Image       string   `json:"image"`
 	SchoolName  string   `bson:"school_name" validate:"required"`
 	SchoolCode  string   `bson:"school_code" validate:"required"`
+	ClassNumber int      `bson:"class_number" validate:"required"`
 	Subjects    []string `json:"subjects" validate:"required"`
-	ClassNumber int      `json:"class_number" validate:"required,oneof=6 7 8"`
 }
 
 type InputClassroom struct {
