@@ -47,17 +47,10 @@ type QuizInput struct {
 }
 
 type DoubtBotInput struct {
-	Student struct {
-		StudentClass                 int    `json:"student_class"`
-		StudentPerformanceFrom1To100 int    `json:"student_performance_from_1_to_100"`
-		StudentLearningStyle         string `json:"student_learning_style"`
-		StudentPerformanceLevel      string `json:"student_performance_level"`
-		StudyPace                    string `json:"study_pace"`
-	} `json:"student"`
 	Doubt struct {
 		Question         string `json:"question"`
-		ImageURL         string `json:"image_url"`
-		ImageDescription string `json:"image_description"`
+		ImageURL         string `json:"image_url" optional:"true"`
+		ImageDescription string `json:"image_description" optional:"true"`
 	} `json:"doubt"`
 	Subject string `json:"subject"`
 }
