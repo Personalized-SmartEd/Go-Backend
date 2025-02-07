@@ -19,7 +19,7 @@ var classroomCollection *mongo.Collection = config.OpenCollection(config.Client,
 func GetClassroomByTeacherID() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		teacherID := c.Param("teacher_id")
@@ -38,7 +38,7 @@ func GetClassroomByTeacherID() gin.HandlerFunc {
 func GetClassroomByID() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		classroomID := c.Param("classroom_id")
@@ -58,7 +58,7 @@ func GetClassroomByID() gin.HandlerFunc {
 func GetStudentsByClassroomID() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		classroomID := c.Param("classroom_id")
@@ -78,7 +78,7 @@ func GetStudentsByClassroomID() gin.HandlerFunc {
 func GetTeachersByClassroomID() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		classroomID := c.Param("classroom_id")
@@ -98,7 +98,7 @@ func GetTeachersByClassroomID() gin.HandlerFunc {
 func GetClassroomsBySchoolCode() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		schoolCode := c.Param("school_code")
@@ -117,7 +117,7 @@ func GetClassroomsBySchoolCode() gin.HandlerFunc {
 func GetClassroomsBySchoolCodeTeacherID() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		schoolCode := c.Param("school_code")
@@ -137,7 +137,7 @@ func GetClassroomsBySchoolCodeTeacherID() gin.HandlerFunc {
 func CreateClassroom() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		var classroom utils.InputClassroom
@@ -168,7 +168,7 @@ func CreateClassroom() gin.HandlerFunc {
 func JoinClassroom() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		classroomID := c.Param("classroom_id")
@@ -195,7 +195,7 @@ func JoinClassroom() gin.HandlerFunc {
 func LeaveClassroom() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		classroomID := c.Param("classroom_id")
@@ -222,7 +222,7 @@ func LeaveClassroom() gin.HandlerFunc {
 func UpdateClassroom() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		classroomID := c.Param("classroom_id")
@@ -247,7 +247,7 @@ func UpdateClassroom() gin.HandlerFunc {
 func DeleteClassroom() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		classroomID := c.Param("classroom_id")

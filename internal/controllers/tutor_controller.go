@@ -49,7 +49,7 @@ func GetTutorClasses() gin.HandlerFunc {
 
 func PostTutorBot() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
 		defer cancel()
 
 		var requestBody utils.TutorBotInput
@@ -99,38 +99,11 @@ func PostTutorBot() gin.HandlerFunc {
 			"study_pace":                        currentStudent.Pace,
 		}
 
-		if requestBody.ChatId == "" {
+		var chatRecordInput []utils.ChatRecordInput
 
-			var chatHistoryList []utils.ChatRecordInput
-			chatHistoryList = append(chatHistoryList, utils.ChatRecordInput{Content: "", Sender: "student"})
-			payload["chat_history"] = chatHistoryList
+		chatRecordInput = append(chatRecordInput, utils.ChatRecordInput{Content: "", Sender: "student"})
 
-		} else {
-
-			chatHistory, err := ChatCollection.Find(ctx, bson.M{"chat_id": requestBody.ChatId})
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve chat history"})
-				return
-			}
-
-			var chatHistoryList []utils.ChatRecordInput
-			for chatHistory.Next(ctx) {
-				var ChatRecordInput utils.ChatRecordInput
-				err := chatHistory.Decode(&ChatRecordInput)
-				if err != nil {
-					c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode chat history"})
-					return
-				}
-				chatHistoryList = append(chatHistoryList, ChatRecordInput)
-			}
-
-			if len(chatHistoryList) == 0 {
-				chatHistoryList = append(chatHistoryList, utils.ChatRecordInput{Content: "", Sender: "student"})
-			}
-
-			payload["chat_history"] = chatHistoryList
-
-		}
+		payload["chat_history"] = chatRecordInput
 
 		requestJSON, err := json.Marshal(payload)
 		if err != nil {

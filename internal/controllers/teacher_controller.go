@@ -20,7 +20,7 @@ var teacherCollection *mongo.Collection = config.OpenCollection(config.Client, "
 
 func GetTeacher() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		teacher_id := c.Param("teacher_id")
@@ -39,7 +39,7 @@ func GetTeacher() gin.HandlerFunc {
 
 func SignUpTeacher() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		var teacher models.Teacher
@@ -96,7 +96,7 @@ func SignUpTeacher() gin.HandlerFunc {
 
 func LoginTeacher() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		var teacher utils.TeacherLogin
@@ -129,7 +129,7 @@ func LoginTeacher() gin.HandlerFunc {
 
 func LogOutTeacher() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		teacher_id := c.Param("teacher_id")

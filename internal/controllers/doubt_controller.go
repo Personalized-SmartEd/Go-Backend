@@ -17,7 +17,7 @@ import (
 
 func PostDoubtBot() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
 		defer cancel()
 
 		var requestBody utils.DoubtBotInput
@@ -38,8 +38,6 @@ func PostDoubtBot() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to convert request body"})
 			return
 		}
-
-		delete(payload, "newchat")
 
 		studentIDIfc, exists := c.Get("student_id")
 		if !exists {
