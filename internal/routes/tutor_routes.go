@@ -10,7 +10,6 @@ import (
 func TutorRoutes(r *gin.Engine) {
 
 	r.Use(middleware.AuthenticationStudent())
-	r.GET("/tutor/classes", controllers.GetTutorClasses())
 	r.POST("/tutor/session", controllers.PostTutorBot())
 
 }
