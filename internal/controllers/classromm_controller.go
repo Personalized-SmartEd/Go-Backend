@@ -44,7 +44,7 @@ func GetClassroomByID() gin.HandlerFunc {
 		classroomID := c.Param("classroom_id")
 
 		var classroom models.Classroom
-		err := classroomCollection.FindOne(ctx, bson.M{"_id": classroomID}).Decode(&classroom)
+		err := classroomCollection.FindOne(ctx, bson.M{"classroom_id": classroomID}).Decode(&classroom)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -64,7 +64,7 @@ func GetStudentsByClassroomID() gin.HandlerFunc {
 		classroomID := c.Param("classroom_id")
 
 		var classroom models.Classroom
-		err := classroomCollection.FindOne(ctx, bson.M{"_id": classroomID}).Decode(&classroom)
+		err := classroomCollection.FindOne(ctx, bson.M{"classroom_id": classroomID}).Decode(&classroom)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -84,7 +84,7 @@ func GetTeachersByClassroomID() gin.HandlerFunc {
 		classroomID := c.Param("classroom_id")
 
 		var classroom models.Classroom
-		err := classroomCollection.FindOne(ctx, bson.M{"_id": classroomID}).Decode(&classroom)
+		err := classroomCollection.FindOne(ctx, bson.M{"classroom_id": classroomID}).Decode(&classroom)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -140,6 +140,8 @@ func CreateClassroom() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
+		teacherID := c.Param("teacher_id")
+
 		var classroom utils.InputClassroom
 		if err := c.BindJSON(&classroom); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -147,12 +149,13 @@ func CreateClassroom() gin.HandlerFunc {
 		}
 
 		var inputClassroom models.Classroom
-		inputClassroom.TeacherID = classroom.TeacherID
+		inputClassroom.TeacherID = teacherID
 		inputClassroom.SchoolCode = classroom.SchoolCode
 		inputClassroom.ClassNumber = classroom.ClassNumber
 		inputClassroom.ClassCode = classroom.ClassCode
 
 		inputClassroom.ID = primitive.NewObjectID()
+		inputClassroom.ClassroomID = inputClassroom.ID.Hex()
 
 		result, err := classroomCollection.InsertOne(ctx, inputClassroom)
 		if err != nil {
@@ -172,22 +175,44 @@ func JoinClassroom() gin.HandlerFunc {
 		defer cancel()
 
 		classroomID := c.Param("classroom_id")
-		studentID := c.Param("student_id")
+
+		studentIDIfc, exists := c.Get("student_id")
+		if !exists {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Student ID not found in context"})
+			return
+		}
+		studentID, ok := studentIDIfc.(string)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid student ID format"})
+			return
+		}
 
 		var classroom models.Classroom
-		err := classroomCollection.FindOne(ctx, bson.M{"_id": classroomID}).Decode(&classroom)
+		err := classroomCollection.FindOne(ctx, bson.M{"classroom_id": classroomID}).Decode(&classroom)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		updatedClassroom, updateErr := classroomCollection.UpdateOne(ctx, bson.M{"_id": classroomID}, bson.M{"$push": bson.M{"students": studentID}})
+		flag := true
+		for _, id := range classroom.Students {
+			if id == studentID {
+				flag = false
+			}
+		}
+
+		if flag {
+			classroom.Students = append(classroom.Students, studentID)
+		}
+
+		result, updateErr := classroomCollection.UpdateOne(ctx, bson.M{"classroom_id": classroomID}, bson.M{"$set": classroom})
+
 		if updateErr != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while updating classroom"})
 			return
 		}
 
-		c.JSON(http.StatusOK, updatedClassroom)
+		c.JSON(http.StatusOK, result)
 
 	}
 }
@@ -199,47 +224,40 @@ func LeaveClassroom() gin.HandlerFunc {
 		defer cancel()
 
 		classroomID := c.Param("classroom_id")
-		studentID := c.Param("student_id")
+
+		studentIDIfc, exists := c.Get("student_id")
+		if !exists {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "student ID not found in context"})
+			return
+		}
+		studentID, ok := studentIDIfc.(string)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid student ID format"})
+			return
+		}
 
 		var classroom models.Classroom
-		err := classroomCollection.FindOne(ctx, bson.M{"_id": classroomID}).Decode(&classroom)
+		err := classroomCollection.FindOne(ctx, bson.M{"classroom_id": classroomID}).Decode(&classroom)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		updatedClassroom, updateErr := classroomCollection.UpdateOne(ctx, bson.M{"_id": classroomID}, bson.M{"$pull": bson.M{"students": studentID}})
+		for i, id := range classroom.Students {
+			if id == studentID {
+				classroom.Students = append(classroom.Students[:i], classroom.Students[i+1:]...)
+				break
+			}
+		}
+
+		result, updateErr := classroomCollection.UpdateOne(ctx, bson.M{"classroom_id": classroomID}, bson.M{"$set": classroom})
+
 		if updateErr != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while updating classroom"})
 			return
 		}
 
-		c.JSON(http.StatusOK, updatedClassroom)
-
-	}
-}
-
-func UpdateClassroom() gin.HandlerFunc {
-	return func(c *gin.Context) {
-
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-
-		classroomID := c.Param("classroom_id")
-
-		var classroom models.Classroom
-		if err := c.BindJSON(&classroom); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		updatedClassroom, err := classroomCollection.UpdateOne(ctx, bson.M{"classroom_id": classroomID}, bson.M{"$set": classroom})
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		c.JSON(http.StatusOK, updatedClassroom)
+		c.JSON(http.StatusOK, result)
 
 	}
 }
@@ -252,7 +270,7 @@ func DeleteClassroom() gin.HandlerFunc {
 
 		classroomID := c.Param("classroom_id")
 
-		_, err := classroomCollection.DeleteOne(ctx, bson.M{"_id": classroomID})
+		_, err := classroomCollection.DeleteOne(ctx, bson.M{"classroom_id": classroomID})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
