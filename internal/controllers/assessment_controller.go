@@ -17,7 +17,7 @@ import (
 
 func GetStaticAssessment() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		_, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 		defer cancel()
 
 		resp, err := http.Get(config.BaseURL + "/assessment/static")

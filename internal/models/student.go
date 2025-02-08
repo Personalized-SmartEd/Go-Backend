@@ -19,7 +19,7 @@ type Student struct {
 	Subjects        []string           `bson:"subjects" validate:"required"`
 	Pace            string             `bson:"pace" validate:"oneof=slow moderate fast"`
 	ClassNumber     int                `bson:"class_number"`
-	ClassCode       string             `bson:"class_code"`
+	ClassCode       []string           `bson:"class_code"`
 	Performance     float64            `bson:"performance"`
 	PerformanceLvl  string             `bson:"performance_lvl" validate:"oneof=beginner intermediate advanced"`
 	PastPerformance []float64          `bson:"past_performance"`

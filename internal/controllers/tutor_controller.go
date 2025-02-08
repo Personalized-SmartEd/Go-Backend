@@ -18,35 +18,6 @@ import (
 
 var ChatCollection *mongo.Collection = config.OpenCollection(config.Client, "chat")
 
-func GetTutorClasses() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-
-		req, err := http.NewRequestWithContext(ctx, "GET", config.BaseURL+"/tutor/classes", nil)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create request"})
-			return
-		}
-
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send request"})
-			return
-		}
-		defer resp.Body.Close()
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read response"})
-			return
-		}
-
-		c.Data(resp.StatusCode, "application/json", body)
-	}
-}
-
 func PostTutorBot() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)

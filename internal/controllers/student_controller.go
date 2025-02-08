@@ -92,7 +92,7 @@ func SignUp() gin.HandlerFunc {
 		inputStudent.PastPerformance = []float64{0.0}
 		inputStudent.LearningStyle = ""
 		inputStudent.Pace = "slow"
-		inputStudent.ClassCode = ""
+		inputStudent.ClassCode = []string{}
 
 		validationErr := validate.Struct(inputStudent)
 		if validationErr != nil {
@@ -152,7 +152,7 @@ func Login() gin.HandlerFunc {
 			return
 		}
 
-		token, refreshToken, _ := helper.GenerateAllTokens(foundstudent.StudentID, foundstudent.Name, foundstudent.Email, foundstudent.ClassCode)
+		token, refreshToken, _ := helper.GenerateAllTokens(foundstudent.StudentID, foundstudent.Name, foundstudent.Email, string(foundstudent.ClassNumber))
 
 		foundstudent.Token = token
 		foundstudent.RefreshToken = &refreshToken

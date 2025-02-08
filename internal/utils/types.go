@@ -91,10 +91,9 @@ type StudentSignUp struct {
 }
 
 type InputClassroom struct {
-	TeacherID   string   `bson:"teacher_id" validate:"required"`
 	SchoolCode  string   `bson:"school_code" validate:"required"`
 	Students    []string `bson:"students"`
-	ClassNumber string   `bson:"class_number" validate:"required"`
+	ClassNumber int      `bson:"class_number" validate:"required"`
 	ClassCode   string   `bson:"class_code" validate:"required"`
 }
 
