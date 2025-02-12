@@ -27,13 +27,13 @@ func GenerateAllTokens(studentID string, name string, email string, class string
 		Email:     email,
 		Class:     class,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(24)).Unix(),
+			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(1000)).Unix(),
 		},
 	}
 
 	refreshClaims := &utils.SignedDetailsStudent{
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(168)).Unix(),
+			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(400)).Unix(),
 		},
 	}
 
