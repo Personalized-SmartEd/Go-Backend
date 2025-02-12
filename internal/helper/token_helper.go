@@ -27,7 +27,7 @@ func GenerateAllTokens(studentID string, name string, email string, class string
 		Email:     email,
 		Class:     class,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(100)).Unix(),
+			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(1000)).Unix(),
 		},
 	}
 
