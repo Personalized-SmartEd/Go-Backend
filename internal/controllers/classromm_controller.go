@@ -194,21 +194,42 @@ func JoinClassroom() gin.HandlerFunc {
 			return
 		}
 
-		flag := true
-		for _, id := range classroom.Students {
-			if id == studentID {
-				flag = false
-			}
+		var currStudent models.Student
+		err = studentCollection.FindOne(ctx, bson.M{"student_id": studentID}).Decode(&currStudent)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
 		}
 
-		if flag {
+		flag1 := true
+		for _, id := range classroom.Students {
+			if id == studentID {
+				flag1 = false
+			}
+		}
+		if flag1 {
 			classroom.Students = append(classroom.Students, studentID)
 		}
 
-		result, updateErr := classroomCollection.UpdateOne(ctx, bson.M{"classroom_id": classroomID}, bson.M{"$set": classroom})
+		flag2 := true
+		for _, id := range currStudent.ClassCode {
+			if id == classroomID {
+				flag2 = false
+			}
+		}
+		if flag2 {
+			currStudent.ClassCode = append(currStudent.ClassCode, classroomID)
+		}
 
+		result, updateErr := classroomCollection.UpdateOne(ctx, bson.M{"classroom_id": classroomID}, bson.M{"$set": classroom})
 		if updateErr != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while updating classroom"})
+			return
+		}
+
+		_, updateErr = studentCollection.UpdateOne(ctx, bson.M{"student_id": studentID}, bson.M{"$set": currStudent})
+		if updateErr != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while updating student"})
 			return
 		}
 
