@@ -25,6 +25,7 @@ func main() {
 	routes.RecommendationRoutes(r)
 	routes.ClassroomRoutesStudent(r)
 	routes.ClassroomRoutesTeacher(r)
+	routes.StudyfeatRoutes(r)
 
 	port := "8080"
 

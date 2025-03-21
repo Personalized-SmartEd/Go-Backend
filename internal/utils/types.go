@@ -112,3 +112,15 @@ type SignedDetailsTeacher struct {
 	SchoolCode string
 	jwt.StandardClaims
 }
+
+type PdfSummariserInput struct {
+	PdfUrl string `json:"pdf_url"`
+}
+
+type YoutubeVideoSummariserInput struct {
+	YoutubeUrl string `json:"youtube_url"`
+}
+
+type MindMapInput struct {
+	Topic string `json:"topic"`
+}
